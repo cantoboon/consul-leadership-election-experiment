@@ -1,4 +1,4 @@
-module consul-leadership-election-example
+module github.com/lewisboon/consul-leadership-election-experiment
 
 go 1.16
 
