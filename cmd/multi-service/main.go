@@ -1,9 +1,9 @@
 package main
 
 import (
-	"consul-leadership-election-example/pkg/service"
 	"fmt"
 	"github.com/hashicorp/consul/api"
+	"github.com/lewisboon/consul-leadership-election-experiment/pkg/service"
 	"log"
 	"net/http"
 )
@@ -14,16 +14,20 @@ func main() {
 		log.Fatalln("Failed to create Consul client", err)
 	}
 
-	serviceManager := service.ServiceManager{
-		[]*service.Service{},
+	serviceManager := service.Manager{
+		Services: []*service.Service{},
 	}
 
 	for i := 1; i <= 10; i++ {
-		log.Println("Initialising service: ", i)
-		service := service.New(fmt.Sprintf("service-%d", i), client)
-		go service.Init()
-		http.HandleFunc(fmt.Sprintf("/%d/hello", i), service.Handler)
-		serviceManager.Add(service)
+		log.Println("Initialising s: ", i)
+		serviceName := fmt.Sprintf("service-%d", i)
+		s := service.New(serviceName, client)
+		err := s.Init()
+		if err != nil {
+			log.Println("Failed to initialize: ", serviceName)
+		}
+		http.HandleFunc(fmt.Sprintf("/%d/hello", i), s.Handler)
+		serviceManager.Add(s)
 	}
 
 	http.HandleFunc("/list", func(writer http.ResponseWriter, request *http.Request) {
@@ -31,7 +35,7 @@ func main() {
 		for _, s := range serviceManager.Services {
 			res = res + fmt.Sprintf("%s - %s\n", s.ID, s.Status)
 		}
-		writer.Write([]byte(res))
+		_, _ = writer.Write([]byte(res))
 	})
 
 	log.Println("Starting HTTP server")

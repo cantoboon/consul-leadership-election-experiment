@@ -81,7 +81,10 @@ func (s *Service) startSession() (string, error) {
 
 	go func() {
 		for {
-			sessionClient.Renew(sessionId, nil)
+			_, _, err := sessionClient.Renew(sessionId, nil)
+			if err != nil {
+				log.Println("Failed to renew session for service: ", s.ID, err)
+			}
 			time.Sleep(5 * time.Second)
 		}
 	}()
@@ -120,6 +123,6 @@ func (s *Service) acquireLeadership() error {
 	return nil
 }
 
-func (s *Service) Handler(w http.ResponseWriter, req *http.Request) {
-	w.Write([]byte(fmt.Sprintf("Hello I am: %s\nStatus: %s\nCurrent Leader: %s", s.ID, s.Status, s.Leader)))
+func (s *Service) Handler(w http.ResponseWriter, _ *http.Request) {
+	_, _ = w.Write([]byte(fmt.Sprintf("Hello I am: %s\nStatus: %s\nCurrent Leader: %s", s.ID, s.Status, s.Leader)))
 }

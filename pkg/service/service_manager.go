@@ -1,9 +1,9 @@
 package service
 
-type ServiceManager struct {
+type Manager struct {
 	Services []*Service
 }
 
-func (sm *ServiceManager) Add(service *Service) {
+func (sm *Manager) Add(service *Service) {
 	sm.Services = append(sm.Services, service)
 }
